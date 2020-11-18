@@ -1,0 +1,31 @@
+name: ESLint
+on: [pull_request]
+jobs:
+  eslint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Use custom registry
+        uses: actions/setup-node@v1
+        with:
+          registry-url: "https://bandwidth.jfrog.io/bandwidth/api/npm/forge-npm/"
+      - name: Cache Node.js modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm'
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+            ${{ runner.OS }}-
+      - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.ARTIFACTORY_DEV_READER_TOKEN }}
+          CYPRESS_INSTALL_BINARY: 0
+      - uses: a-b-r-o-w-n/eslint-action@865e590
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          files: "src/**/*"
+          extensions: ".js,.ts,.tsx"
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.ARTIFACTORY_DEV_READER_TOKEN}}

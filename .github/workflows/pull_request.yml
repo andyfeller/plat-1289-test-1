@@ -1,0 +1,23 @@
+name: Unit test
+
+on: [pull_request]
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: "https://bandwidth.jfrog.io/bandwidth/api/npm/forge-npm/"
+      - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.ARTIFACTORY_DEV_READER_TOKEN }}
+      - run: npm run test
